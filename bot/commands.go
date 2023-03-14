@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const layoutDateTime = "2006-01-02 15:04"
+
 func HandleOtherCommand() string {
 	return "Sorry, i can't help with this:("
 }
@@ -60,7 +62,7 @@ func HandleStatisticCommand(message *botApi.Message, postgresDb *config.Postgres
 	}
 	var result []string
 	for _, record := range *records {
-		result = append(result, fmt.Sprintf("%s %.2f %s", record.Date.Format(time.DateTime), record.IncomeValue, record.IncomeCurrency))
+		result = append(result, fmt.Sprintf("%s %.2f %s", record.Date.Format(layoutDateTime), record.IncomeValue, record.IncomeCurrency))
 	}
 	return strings.Join(result, "\n")
 }
