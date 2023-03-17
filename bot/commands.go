@@ -11,12 +11,6 @@ import (
 	"time"
 )
 
-const layoutDateTime = "2006-01-02 15:04"
-
-func HandleOtherCommand() string {
-	return "Sorry, i can't help with this:("
-}
-
 func HandleCurrencyCommand(currency string) string {
 	currentCurrencyRate, err := service.GetCurrencyAtDate(time.Now(), currency)
 	if err != nil {
@@ -58,11 +52,11 @@ func HandleStatisticCommand(message *botApi.Message, postgresDb *config.Postgres
 	records, err := service.GetLastTenUserRecords(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
 	if err != nil || len(*records) == 0 {
 		return `Sorry can't retrieve records:(
-				Maybe you not save any income yet?`
+			Maybe you not save any income yet?`
 	}
 	var result []string
 	for _, record := range *records {
-		result = append(result, fmt.Sprintf("%s %.2f %s", record.Date.Format(layoutDateTime), record.IncomeValue, record.IncomeCurrency))
+		result = append(result, fmt.Sprintf("%s %.2f %s", record.Date.Format(time.DateTime), record.IncomeValue, record.IncomeCurrency))
 	}
 	return strings.Join(result, "\n")
 }

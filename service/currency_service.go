@@ -9,8 +9,6 @@ import (
 	"time"
 )
 
-const layoutDateOnly = "2006-01-02"
-
 type ApiResponse []struct {
 	Date       time.Time `json:"date"`
 	Currencies []struct {
@@ -38,7 +36,7 @@ func GetCurrencyAtDate(date time.Time, currency string) (float64, error) {
 	}
 	query := urlParsed.Query()
 	query.Add(RequestCurrencyKey, currency)
-	query.Add(RequestDateKey, date.Format(layoutDateOnly))
+	query.Add(RequestDateKey, date.Format(time.DateOnly))
 	urlParsed.RawQuery = query.Encode()
 
 	response, errFetching := http.Get(urlParsed.String())

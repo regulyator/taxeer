@@ -9,9 +9,9 @@ import (
 )
 
 func StartTaxeerBotListener(postgresDb *config.PostgresDb) {
-	println(os.Getenv("BOT_API_KEY"))
 	bot, err := botApi.NewBotAPI(os.Getenv("BOT_API_KEY"))
 	if err != nil {
+		log.Printf("Error when starting bot!")
 		log.Panic(err)
 	}
 	registerCommands(bot)
@@ -27,9 +27,11 @@ func handleUpdates(postgresDb *config.PostgresDb, bot *botApi.BotAPI) {
 		if update.Message == nil || !update.Message.IsCommand() {
 			continue
 		}
-
-		msg := botApi.NewMessage(update.Message.Chat.ID, handleCommand(update.Message, postgresDb))
-		sendResponse(msg, bot)
+		var msgText = handleCommand(update.Message, postgresDb)
+		if len(msgText) > 0 {
+			msg := botApi.NewMessage(update.Message.Chat.ID, msgText)
+			sendResponse(msg, bot)
+		}
 	}
 }
 
@@ -67,7 +69,9 @@ func handleCommand(message *botApi.Message, postgresDb *config.PostgresDb) strin
 		return HandleCurrencyCommand("USD")
 	case "statistic":
 		return HandleStatisticCommand(message, postgresDb)
+	case "start":
+		return "Hi! I'm bot for Georgian accounting, feel free to see commands list for usage!"
 	default:
-		return HandleOtherCommand()
+		return ""
 	}
 }

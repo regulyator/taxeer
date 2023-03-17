@@ -4,7 +4,7 @@ services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      - "8080"
     depends_on:
       - db
     environment:
@@ -13,19 +13,13 @@ services:
       - DB_USER_KEY=${DB_USER}
       - DB_PASSWORD_KEY=${DB_PASSWORD}
       - DB_NAME_KEY=${DB_NAME}
+    restart: on-failure
 
   db:
     image: "postgres:13-alpine"
     ports:
-      - "5432:5432"
-    volumes:
-      - ./db/schema/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
+      - "5432"
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
