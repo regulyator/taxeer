@@ -30,7 +30,7 @@ func RunMigration(db *sql.DB) {
 	m, err := migrate.NewWithDatabaseInstance(
 		"file:./db/migration",
 		"postgres", driver)
-	if err := m.Up(); err != nil {
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal(err)
 	}
 
