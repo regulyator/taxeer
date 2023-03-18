@@ -3,6 +3,7 @@ package bot
 import (
 	"log"
 	"os"
+	"taxeer/bot/commands"
 	"taxeer/util/config"
 
 	botApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -36,7 +37,7 @@ func handleUpdates(postgresDb *config.PostgresDb, bot *botApi.BotAPI) {
 }
 
 func registerCommands(bot *botApi.BotAPI) {
-	commands := botApi.NewSetMyCommands(
+	commandsConfig := botApi.NewSetMyCommands(
 		botApi.BotCommand{
 			Command:     "/income",
 			Description: "Save income by command '/income value:currency' (don't forget separate by ':')",
@@ -48,8 +49,12 @@ func registerCommands(bot *botApi.BotAPI) {
 		botApi.BotCommand{
 			Command:     "/statistic",
 			Description: "Print last 10 incomes",
+		},
+		botApi.BotCommand{
+			Command:     "/current",
+			Description: "Print current incomes sum year, mont and month taxes values",
 		})
-	if _, err := bot.Request(commands); err != nil {
+	if _, err := bot.Request(commandsConfig); err != nil {
 		log.Panic(err)
 	}
 }
@@ -64,13 +69,15 @@ func handleCommand(message *botApi.Message, postgresDb *config.PostgresDb) strin
 	command := message.Command()
 	switch command {
 	case "income":
-		return HandleIncomeCommand(message, postgresDb)
+		return commands.HandleIncomeCommand(message, postgresDb)
 	case "currency":
-		return HandleCurrencyCommand("USD")
+		return commands.HandleCurrencyCommand("USD")
 	case "statistic":
-		return HandleStatisticCommand(message, postgresDb)
+		return commands.HandleStatisticCommand(message, postgresDb)
 	case "start":
 		return "Hi! I'm bot for Georgian accounting, feel free to see commands list for usage!"
+	case "current":
+		return commands.HandleCurrentCommand(message, postgresDb)
 	default:
 		return ""
 	}
