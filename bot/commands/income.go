@@ -1,4 +1,4 @@
-package bot
+package commands
 
 import (
 	"fmt"
@@ -10,14 +10,6 @@ import (
 	"taxeer/util/config"
 	"time"
 )
-
-func HandleCurrencyCommand(currency string) string {
-	currentCurrencyRate, err := service.GetCurrencyAtDate(time.Now(), currency)
-	if err != nil {
-		return fmt.Sprintf("Ooops! Can't get today currency rate for %s, try again later:(", currency)
-	}
-	return fmt.Sprintf("%.4f", currentCurrencyRate)
-}
 
 func HandleIncomeCommand(message *botApi.Message, postgresDb *config.PostgresDb) string {
 	if message.Text != "" {
@@ -46,17 +38,4 @@ func HandleIncomeCommand(message *botApi.Message, postgresDb *config.PostgresDb)
 	} else {
 		return "Please input correct income value after command:)"
 	}
-}
-
-func HandleStatisticCommand(message *botApi.Message, postgresDb *config.PostgresDb) string {
-	records, err := service.GetLastTenUserRecords(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
-	if err != nil || len(*records) == 0 {
-		return `Sorry can't retrieve records:(
-			Maybe you not save any income yet?`
-	}
-	var result []string
-	for _, record := range *records {
-		result = append(result, fmt.Sprintf("%s %.2f %s", record.Date.Format(time.DateTime), record.IncomeValue, record.IncomeCurrency))
-	}
-	return strings.Join(result, "\n")
 }
