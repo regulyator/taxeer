@@ -40,7 +40,7 @@ func registerCommands(bot *botApi.BotAPI) {
 	commandsConfig := botApi.NewSetMyCommands(
 		botApi.BotCommand{
 			Command:     "/income",
-			Description: "Save income by command '/income value:currency' (don't forget separate by ':')",
+			Description: "Save income by command '/income value:currency:date'\n(don't forget separate by ':')\ndate params is optional (DD-MM-YYYY)",
 		},
 		botApi.BotCommand{
 			Command:     "/currency",
