@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const DDMMYYYYLayout = "02-01-2006"
+
 func HandleIncomeCommand(message *botApi.Message, postgresDb *config.PostgresDb) string {
 	if message.Text != "" {
 		currentUser := service.GetExistUserOrCreate(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
@@ -31,7 +33,7 @@ func HandleIncomeCommand(message *botApi.Message, postgresDb *config.PostgresDb)
 		}
 		recordParams := sqlc.CreateRecordParams{
 			TaxeerUserID:   currentUser.ID,
-			Date:           time.Now(),
+			Date:           rateDate,
 			IncomeValue:    incomeValue,
 			IncomeCurrency: incomeParams[1],
 			Rate:           currencyRate,
@@ -50,7 +52,7 @@ func parseDateInput(incomeParams []string) (time.Time, error) {
 	if len(incomeParams) == 2 {
 		return time.Now(), nil
 	} else {
-		if parsedDate, err := time.Parse(time.DateOnly, incomeParams[2]); err != nil {
+		if parsedDate, err := time.Parse(DDMMYYYYLayout, incomeParams[2]); err != nil {
 			return time.Now(), err
 		} else {
 			return parsedDate, nil
