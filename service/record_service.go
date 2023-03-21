@@ -35,24 +35,42 @@ func GetLastTenUserRecords(db *sql.DB, telegramUserId string, chatId int64) (*[]
 	return &records, nil
 }
 
-func GetAllUSerRecordsInCurrentYear(db *sql.DB, telegramUserId string, chatId int64) (*[]sqlc.TaxeerRecord, error) {
+func GetAllUSerRecordsInCurrentFinanceYear(db *sql.DB, telegramUserId string, chatId int64) (*[]sqlc.TaxeerRecord, error) {
 	currentDate := time.Now()
+	currentYear, currentMonth, _ := currentDate.Date()
+	var dateFrom, dateTo time.Time
+	if currentMonth == time.January {
+		dateFrom = time.Date(currentYear-1, time.January, 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, time.January, 1, 0, 0, 0, 0, time.Local)
+	} else {
+		dateFrom = time.Date(currentYear, time.January, 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.Local)
+	}
 	return getUserRecordsByDateBetween(
 		db,
 		telegramUserId,
 		chatId,
-		time.Date(currentDate.Year(), time.January, 1, 0, 0, 0, 0, time.Local),
-		currentDate)
+		dateFrom,
+		dateTo)
 }
 
-func GetAllUSerRecordsInCurrentMonth(db *sql.DB, telegramUserId string, chatId int64) (*[]sqlc.TaxeerRecord, error) {
+func GetAllUSerRecordsInCurrentFinanceMonth(db *sql.DB, telegramUserId string, chatId int64) (*[]sqlc.TaxeerRecord, error) {
 	currentDate := time.Now()
+	currentYear, currentMonth, _ := currentDate.Date()
+	var dateFrom, dateTo time.Time
+	if currentMonth == time.January {
+		dateFrom = time.Date(currentYear-1, time.December, 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, time.January, 1, 0, 0, 0, 0, time.Local)
+	} else {
+		dateFrom = time.Date(currentYear, currentMonth+time.Month(-1), 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.Local)
+	}
 	return getUserRecordsByDateBetween(
 		db,
 		telegramUserId,
 		chatId,
-		time.Date(currentDate.Year(), currentDate.Month(), 1, 0, 0, 0, 0, time.Local),
-		currentDate)
+		dateFrom,
+		dateTo)
 }
 
 func getUserRecordsByDateBetween(db *sql.DB, telegramUserId string, chatId int64, dateFrom time.Time, dateTo time.Time) (*[]sqlc.TaxeerRecord, error) {
