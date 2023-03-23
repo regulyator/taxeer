@@ -20,7 +20,7 @@ func HandleCurrentCommand(message *botApi.Message, postgresDb *config.PostgresDb
 	yearRecords, err := service.GetAllUSerRecordsInCurrentFinanceYear(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
 	monthRecords, err := service.GetAllUSerRecordsInCurrentFinanceMonth(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
 	if err != nil || len(*yearRecords) == 0 {
-		return "Sorry can't retrieve records:( Maybe you not save any income yet?"
+		return "Looks like you no need to pay taxes in this month:) Check saved incomes by /statistic command!"
 	}
 	incomes := calculateYearAndMonthIncomes(yearRecords, monthRecords)
 
