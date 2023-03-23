@@ -3,6 +3,7 @@ version: '3'
 services:
   app:
     build: .
+    image: taxeer_app:latest
     ports:
       - "8080"
     depends_on:
@@ -10,16 +11,21 @@ services:
     environment:
       - BOT_API_KEY=${BOT_API}
       - DB_HOST_KEY=db
-      - DB_USER_KEY=${DB_USER}
+      - DB_USER_KEY=taxeer
       - DB_PASSWORD_KEY=${DB_PASSWORD}
-      - DB_NAME_KEY=${DB_NAME}
+      - DB_NAME_KEY=taxeer
     restart: on-failure
 
   db:
     image: "postgres:13-alpine"
     ports:
       - "5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_USER=taxeer
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_DB=taxeer
+
+volumes:
+  db_data:
