@@ -17,8 +17,8 @@ type Incomes struct {
 }
 
 func HandleCurrentCommand(message *botApi.Message, postgresDb *config.PostgresDb) string {
-	yearRecords, err := service.GetAllUSerRecordsInCurrentYear(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
-	monthRecords, err := service.GetAllUSerRecordsInCurrentMonth(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
+	yearRecords, err := service.GetAllUSerRecordsInCurrentFinanceYear(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
+	monthRecords, err := service.GetAllUSerRecordsInCurrentFinanceMonth(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
 	if err != nil || len(*yearRecords) == 0 {
 		return "Sorry can't retrieve records:( Maybe you not save any income yet?"
 	}
