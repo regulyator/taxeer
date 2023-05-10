@@ -6,6 +6,8 @@ import (
 	"log"
 	"taxeer/db/sqlc"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func CreateIncomeRecord(db *sql.DB, recordParams sqlc.CreateRecordParams) (*sqlc.TaxeerRecord, error) {
@@ -28,6 +30,23 @@ func GetLastTenUserRecords(db *sql.DB, telegramUserId string, chatId int64) (*[]
 		Limit:        10,
 	}
 	records, err := query.GetLastNRecordByUserId(ctx, requestParams)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	return &records, nil
+}
+
+func GetUserRecordsPage(db *sql.DB, telegramUserId string, chatId int64, limit int32, offset int32) (*[]sqlc.TaxeerRecord, error) {
+	ctx := context.Background()
+	query := sqlc.New(db)
+	currentUser := GetExistUserOrCreate(db, telegramUserId, chatId)
+	requestParams := sqlc.GetRecordByUserIdWithLimitAndOffsetParams{
+		TaxeerUserID: currentUser.ID,
+		Limit:        limit,
+		Offset:       offset,
+	}
+	records, err := query.GetRecordByUserIdWithLimitAndOffset(ctx, requestParams)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -71,6 +90,18 @@ func GetAllUSerRecordsInCurrentFinanceMonth(db *sql.DB, telegramUserId string, c
 		chatId,
 		dateFrom,
 		dateTo)
+}
+
+func GetUserRecordById(db *sql.DB, recordUUID uuid.UUID) (sqlc.TaxeerRecord, error) {
+	ctx := context.Background()
+	query := sqlc.New(db)
+	return query.GetRecordById(ctx, recordUUID)
+}
+
+func DeleteUserRecord(db *sql.DB, recordUUID uuid.UUID) error {
+	ctx := context.Background()
+	query := sqlc.New(db)
+	return query.DeleteRecord(ctx, recordUUID)
 }
 
 func getUserRecordsByDateBetween(db *sql.DB, telegramUserId string, chatId int64, dateFrom time.Time, dateTo time.Time) (*[]sqlc.TaxeerRecord, error) {
