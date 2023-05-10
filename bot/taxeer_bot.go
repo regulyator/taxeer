@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"taxeer/bot/commands"
+	"taxeer/bot/model"
 	"taxeer/util/config"
 
 	botApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -20,20 +21,31 @@ func StartTaxeerBotListener(postgresDb *config.PostgresDb) {
 }
 
 func handleUpdates(postgresDb *config.PostgresDb, bot *botApi.BotAPI) {
+	handlers := getHandlers(postgresDb, bot)
 	bot.Debug = true
 	updateConfig := botApi.NewUpdate(0)
 	updateConfig.Timeout = 60
 	updates := bot.GetUpdatesChan(updateConfig)
 	for update := range updates {
-		if update.Message == nil || !update.Message.IsCommand() {
-			continue
+		for _, handler := range handlers {
+			if handler.CanHandleUpdate(&update) {
+				handler.HandleUpdate(&update)
+			}
 		}
-		var msgText = handleCommand(update.Message, postgresDb)
-		if len(msgText) > 0 {
-			msg := botApi.NewMessage(update.Message.Chat.ID, msgText)
-			sendResponse(msg, bot)
-		}
+
 	}
+}
+
+func getHandlers(postgresDb *config.PostgresDb, bot *botApi.BotAPI) []model.UpdateHandler {
+	handlers := []model.UpdateHandler{
+		commands.GetCurrencyCommandHandler(bot),
+		commands.GetCurrentCommandHandler(bot, postgresDb),
+		commands.GetDeleteCommandHandler(bot, postgresDb),
+		commands.GetIncomeCommandHandler(bot, postgresDb),
+		commands.GetStartCommandHandler(bot),
+		commands.GetStatisticCommandHandler(bot, postgresDb),
+	}
+	return handlers
 }
 
 func registerCommands(bot *botApi.BotAPI) {
@@ -53,6 +65,10 @@ func registerCommands(bot *botApi.BotAPI) {
 		botApi.BotCommand{
 			Command:     "/current",
 			Description: "Print current incomes sum year, mont and month taxes values",
+		},
+		botApi.BotCommand{
+			Command:     "/delete",
+			Description: "Delete selected income",
 		})
 	if _, err := bot.Request(commandsConfig); err != nil {
 		log.Panic(err)
@@ -62,23 +78,5 @@ func registerCommands(bot *botApi.BotAPI) {
 func sendResponse(msg botApi.MessageConfig, bot *botApi.BotAPI) {
 	if _, err := bot.Send(msg); err != nil {
 		log.Panic(err)
-	}
-}
-
-func handleCommand(message *botApi.Message, postgresDb *config.PostgresDb) string {
-	command := message.Command()
-	switch command {
-	case "income":
-		return commands.HandleIncomeCommand(message, postgresDb)
-	case "currency":
-		return commands.HandleCurrencyCommand("USD")
-	case "statistic":
-		return commands.HandleStatisticCommand(message, postgresDb)
-	case "start":
-		return "Hi! I'm bot for Georgian accounting, feel free to see commands list for usage!"
-	case "current":
-		return commands.HandleCurrentCommand(message, postgresDb)
-	default:
-		return ""
 	}
 }

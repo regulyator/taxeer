@@ -10,12 +10,24 @@ WHERE taxeer_user_id = $1
 ORDER BY date desc
 LIMIT $2;
 
+-- name: GetRecordByUserIdWithLimitAndOffset :many
+SELECT *
+FROM taxeer_record
+WHERE taxeer_user_id = $1
+ORDER BY date desc
+LIMIT $2 OFFSET $3;
+
 -- name: GetRecordByUserIdAndDateBetweenOrderedByDateDesc :many
 SELECT *
 FROM taxeer_record
 WHERE taxeer_user_id = $1
 AND date between $2 and $3
 ORDER BY date desc;
+
+-- name: GetRecordById :one
+SELECT *
+FROM taxeer_record
+WHERE id = $1;
 
 -- name: CreateRecord :one
 INSERT INTO taxeer_record (taxeer_user_id, "date", income_value, income_currency, rate)
@@ -35,4 +47,8 @@ WHERE id = $1;
 -- name: UpdateRecordRate :exec
 UPDATE taxeer_record
 SET rate = $2
+WHERE id = $1;
+
+-- name: DeleteRecord :exec
+DELETE FROM taxeer_record
 WHERE id = $1;

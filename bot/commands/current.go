@@ -1,12 +1,15 @@
 package commands
 
 import (
+	"database/sql"
 	"fmt"
-	botApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"log"
 	"strconv"
 	"taxeer/db/sqlc"
 	"taxeer/service"
 	"taxeer/util/config"
+
+	botApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 const MonthTaxPercentage = 0.01
@@ -16,9 +19,30 @@ type Incomes struct {
 	monthSum float64
 }
 
-func HandleCurrentCommand(message *botApi.Message, postgresDb *config.PostgresDb) string {
-	yearRecords, err := service.GetAllUSerRecordsInCurrentFinanceYear(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
-	monthRecords, err := service.GetAllUSerRecordsInCurrentFinanceMonth(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
+type currentHandler struct {
+	command  string
+	bot      *botApi.BotAPI
+	database *sql.DB
+}
+
+func (handler currentHandler) CanHandleUpdate(update *botApi.Update) bool {
+	return update.Message != nil && update.Message.IsCommand() && update.Message.Command() == handler.command
+}
+
+func (handler currentHandler) HandleUpdate(update *botApi.Update) {
+	if handler.CanHandleUpdate(update) {
+		msgText := handleCurrentCommand(update.Message, handler.database)
+
+		if _, err := handler.bot.Send(botApi.NewMessage(update.Message.Chat.ID, msgText)); err != nil {
+			log.Println(err)
+		}
+
+	}
+}
+
+func handleCurrentCommand(message *botApi.Message, database *sql.DB) string {
+	yearRecords, err := service.GetAllUSerRecordsInCurrentFinanceYear(database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
+	monthRecords, err := service.GetAllUSerRecordsInCurrentFinanceMonth(database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
 	if err != nil || len(*yearRecords) == 0 {
 		return "Looks like you no need to pay taxes in this month:) Check saved incomes by /statistic command!"
 	}
@@ -41,5 +65,13 @@ func calculateYearAndMonthIncomes(yearRecords *[]sqlc.TaxeerRecord, monthRecords
 	return Incomes{
 		yearSum:  yearSum,
 		monthSum: monthSum,
+	}
+}
+
+func GetCurrentCommandHandler(bot *botApi.BotAPI, postgresDb *config.PostgresDb) *currentHandler {
+	return &currentHandler{
+		command:  "current",
+		bot:      bot,
+		database: postgresDb.Database,
 	}
 }

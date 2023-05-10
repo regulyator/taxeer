@@ -1,21 +1,45 @@
 package commands
 
 import (
+	"database/sql"
 	"fmt"
-	botApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"log"
 	"strconv"
 	"strings"
 	"taxeer/db/sqlc"
 	"taxeer/service"
 	"taxeer/util/config"
 	"time"
+
+	botApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 const DDMMYYYYLayout = "02-01-2006"
 
-func HandleIncomeCommand(message *botApi.Message, postgresDb *config.PostgresDb) string {
+type incomeHandler struct {
+	command  string
+	bot      *botApi.BotAPI
+	database *sql.DB
+}
+
+func (handler incomeHandler) CanHandleUpdate(update *botApi.Update) bool {
+	return update.Message != nil && update.Message.IsCommand() && update.Message.Command() == handler.command
+}
+
+func (handler incomeHandler) HandleUpdate(update *botApi.Update) {
+	if handler.CanHandleUpdate(update) {
+		msgText := handleIncomeCommand(update.Message, handler.database)
+
+		if _, err := handler.bot.Send(botApi.NewMessage(update.Message.Chat.ID, msgText)); err != nil {
+			log.Println(err)
+		}
+
+	}
+}
+
+func handleIncomeCommand(message *botApi.Message, database *sql.DB) string {
 	if message.Text != "" {
-		currentUser := service.GetExistUserOrCreate(postgresDb.Database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
+		currentUser := service.GetExistUserOrCreate(database, strconv.FormatInt(message.From.ID, 10), message.Chat.ID)
 		incomeParams := strings.Split(strings.TrimSpace(strings.Replace(message.Text, "/income", "", 1)), ":")
 		incomeValue, err := strconv.ParseFloat(incomeParams[0], 64)
 		if err != nil || len(incomeParams) < 2 || len(incomeParams[1]) == 0 {
@@ -38,7 +62,7 @@ func HandleIncomeCommand(message *botApi.Message, postgresDb *config.PostgresDb)
 			IncomeCurrency: incomeParams[1],
 			Rate:           currencyRate,
 		}
-		savedRecord, errCreateRecord := service.CreateIncomeRecord(postgresDb.Database, recordParams)
+		savedRecord, errCreateRecord := service.CreateIncomeRecord(database, recordParams)
 		if errCreateRecord != nil {
 			return "Income not saved, try again:("
 		}
@@ -57,5 +81,13 @@ func parseDateInput(incomeParams []string) (time.Time, error) {
 		} else {
 			return parsedDate, nil
 		}
+	}
+}
+
+func GetIncomeCommandHandler(bot *botApi.BotAPI, postgresDb *config.PostgresDb) *incomeHandler {
+	return &incomeHandler{
+		command:  "income",
+		bot:      bot,
+		database: postgresDb.Database,
 	}
 }
