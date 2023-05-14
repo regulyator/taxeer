@@ -2,6 +2,7 @@ version: '3'
 
 services:
   app:
+    build: .
     image: taxeer_app:latest
     ports:
       - "8080"
