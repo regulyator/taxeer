@@ -60,10 +60,10 @@ func GetAllUSerRecordsInCurrentFinanceYear(db *sql.DB, telegramUserId string, ch
 	var dateFrom, dateTo time.Time
 	if currentMonth == time.January {
 		dateFrom = time.Date(currentYear-1, time.January, 1, 0, 0, 0, 0, time.Local)
-		dateTo = time.Date(currentYear, time.January, 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, time.January, 1, 0, 0, -1, 0, time.Local)
 	} else {
 		dateFrom = time.Date(currentYear, time.January, 1, 0, 0, 0, 0, time.Local)
-		dateTo = time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, currentMonth, 1, 0, 0, -1, 0, time.Local)
 	}
 	return getUserRecordsByDateBetween(
 		db,
@@ -79,10 +79,10 @@ func GetAllUSerRecordsInCurrentFinanceMonth(db *sql.DB, telegramUserId string, c
 	var dateFrom, dateTo time.Time
 	if currentMonth == time.January {
 		dateFrom = time.Date(currentYear-1, time.December, 1, 0, 0, 0, 0, time.Local)
-		dateTo = time.Date(currentYear, time.January, 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, time.January, 1, 0, 0, -1, 0, time.Local)
 	} else {
 		dateFrom = time.Date(currentYear, currentMonth+time.Month(-1), 1, 0, 0, 0, 0, time.Local)
-		dateTo = time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, time.Local)
+		dateTo = time.Date(currentYear, currentMonth, 1, 0, 0, -1, 0, time.Local)
 	}
 	return getUserRecordsByDateBetween(
 		db,
