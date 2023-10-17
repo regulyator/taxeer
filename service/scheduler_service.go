@@ -30,7 +30,7 @@ func ScheduleTaxNotification(bot *botApi.BotAPI, database *sql.DB) {
 		})
 
 	createScheduledNotificationJob(
-		"0 0 L-2 * *",
+		"0 0 28-31 * *",
 		func() {
 			notifyAllUsersAboutTaxPeriod(database, bot, "Please, dont forget to fill out monthly income of this month!")
 		})
