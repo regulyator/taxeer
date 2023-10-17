@@ -5,6 +5,7 @@ import (
 	"os"
 	"taxeer/bot/commands"
 	"taxeer/bot/model"
+	"taxeer/service"
 	"taxeer/util/config"
 
 	botApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -17,6 +18,7 @@ func StartTaxeerBotListener(postgresDb *config.PostgresDb) {
 		log.Panic(err)
 	}
 	registerCommands(bot)
+	service.ScheduleTaxNotification(bot, postgresDb.Database)
 	handleUpdates(postgresDb, bot)
 }
 
@@ -71,12 +73,6 @@ func registerCommands(bot *botApi.BotAPI) {
 			Description: "Delete selected income",
 		})
 	if _, err := bot.Request(commandsConfig); err != nil {
-		log.Panic(err)
-	}
-}
-
-func sendResponse(msg botApi.MessageConfig, bot *botApi.BotAPI) {
-	if _, err := bot.Send(msg); err != nil {
 		log.Panic(err)
 	}
 }
