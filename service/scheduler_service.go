@@ -39,7 +39,7 @@ func ScheduleTaxNotification(bot *botApi.BotAPI, database *sql.DB) {
 }
 
 func createScheduledNotificationJob(cronPattern string, task func()) {
-	if _, err := goCronScheduler.Cron("").Do(task); err != nil {
+	if _, err := goCronScheduler.Cron(cronPattern).Do(task); err != nil {
 		log.Printf("error when schedulling task %s cron: %s", err, cronPattern)
 	}
 }
