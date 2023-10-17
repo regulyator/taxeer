@@ -13,3 +13,7 @@ RETURNING *;
 UPDATE taxeer_user
 SET chat_id = $2
 WHERE id = $1;
+
+-- name: GetAllUsers :many
+SELECT *
+FROM taxeer_user;
