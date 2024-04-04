@@ -14,7 +14,7 @@ services:
       - DB_USER_KEY=taxeer
       - DB_PASSWORD_KEY=${DB_PASSWORD}
       - DB_NAME_KEY=taxeer
-    restart: on-failure
+    restart: unless-stopped
 
   db:
     image: "postgres:13-alpine"
@@ -26,6 +26,7 @@ services:
       - POSTGRES_USER=taxeer
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=taxeer
+    restart: unless-stopped
 
 volumes:
   db_data:
